@@ -19,8 +19,10 @@ password String
 avatarUrl String?
 created_at DateTime @default(now())
 updated_at DateTime @updatedAt
-profile Profile?
 
+
+profile Profile?
+transaksi Transaction[]
 }
 
 
@@ -45,8 +47,9 @@ model Transaction{
   bukti_url String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  user_id Int
+  user_id String
   kategori_id Int
+  user User @relation(fields: [user_id], references: [id])
 }
 
 model Kategori{
