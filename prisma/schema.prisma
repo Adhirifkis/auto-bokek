@@ -1,0 +1,84 @@
+
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User{
+id  String @id @default(cuid())
+name String
+email String @unique
+provider String
+password String
+avatarUrl String?
+created_at DateTime @default(now())
+updated_at DateTime @updatedAt
+profile Profile?
+
+}
+
+
+model Profile {
+  id String   @id @default(cuid())
+  bio String?
+  github String?
+  linkedin String?
+  phone String?
+  userId String   @unique
+  user User @relation(fields: [userId],references: [id])
+}
+
+
+model Transaction{
+  id String @id @default(cuid())
+  judul String
+  nominal Decimal
+  tanggal DateTime
+  jam DateTime
+  catatan String?
+  bukti_url String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user_id Int
+  kategori_id Int
+}
+
+model Kategori{
+  id String @id @default(cuid())
+  name_kategori String
+  tipe String //pemasukan atau pengeluaran
+}
+
+model Budged{
+id String @id @default(cuid())
+nominal_budget Decimal
+periode String
+created_at DateTime @default(now())
+updated_at DateTime @updatedAt
+user_id Int 
+kategori_id Int
+}
+
+model Insight{
+id String @id @default(cuid())
+prediksi_json String
+saran_penghematan String
+generated_at DateTime @default(now())
+user_id Int
+}
+
+model Notifikasi{
+  id String @id @default(cuid())
+  isi_pesan String
+  tipe_pesan String //"warning", "info", "success"
+  terkait_kategori_id Int
+  status_baca Boolean @default(false)
+  created_at DateTime @default(now())
+  user_id Int
+}
