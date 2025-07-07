@@ -23,6 +23,9 @@ updated_at DateTime @updatedAt
 
 profile Profile?
 transaksi Transaction[]
+budget Budget[]
+insight Insight[]
+notifikasi Notifikasi[]
 }
 
 
@@ -47,25 +50,37 @@ model Transaction{
   bukti_url String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  
   user_id String
-  kategori_id Int
+  kategori_id String
+  
   user User @relation(fields: [user_id], references: [id])
+  kategori Kategori @relation(fields: [kategori_id], references: [id])
 }
 
 model Kategori{
   id String @id @default(cuid())
   name_kategori String
   tipe String //pemasukan atau pengeluaran
+
+  transaksi Transaction[]
+  budgets Budget[]
+  notifikasis Notifikasi[]
+
 }
 
-model Budged{
+model Budget{
 id String @id @default(cuid())
 nominal_budget Decimal
 periode String
 created_at DateTime @default(now())
 updated_at DateTime @updatedAt
-user_id Int 
-kategori_id Int
+
+user_id String 
+kategori_id String
+
+user User @relation(fields: [user_id], references: [id])
+kategori Kategori @relation(fields: [kategori_id], references: [id])
 }
 
 model Insight{
@@ -73,15 +88,21 @@ id String @id @default(cuid())
 prediksi_json String
 saran_penghematan String
 generated_at DateTime @default(now())
-user_id Int
+
+user_id String
+user User @relation(fields: [user_id], references: [id])
+
 }
 
 model Notifikasi{
   id String @id @default(cuid())
   isi_pesan String
   tipe_pesan String //"warning", "info", "success"
-  terkait_kategori_id Int
+  terkait_kategori_id String
   status_baca Boolean @default(false)
   created_at DateTime @default(now())
-  user_id Int
+
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+  kategori Kategori @relation(fields: [terkait_kategori_id], references: [id])
 }
