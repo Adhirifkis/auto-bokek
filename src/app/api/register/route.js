@@ -1,9 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../../../lib/prisma";
 import bcrypt from "bcrypt";
 
 export async function POST(request) {
   try {
     const { name, email, password } = await request.json();
+
+    console.log("Form Input:", { name, email, password });
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
 
@@ -12,6 +14,8 @@ export async function POST(request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    console.log("Hashed password:", hashedPassword);
 
     const user = await prisma.user.create({
       data: {
