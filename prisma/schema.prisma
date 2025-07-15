@@ -21,6 +21,14 @@ model User {
   notifikasi Notifikasi[]
   profile    Profile?
   transaksi  Transaction[]
+  session    Session[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model Profile {

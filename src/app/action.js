@@ -1,9 +1,12 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/services/session";
 import bcrypt from "bcrypt";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-export async function registerUser(prevState, formData) {
+export async function registerUser(statusMessage, formData) {
   const name = formData.get("name");
   const email = formData.get("email");
   const password = formData.get("password");
@@ -35,19 +38,65 @@ export async function registerUser(prevState, formData) {
   }
 }
 
-export async function loginUser(prevState, formData) {
+export async function loginUser(statusMessage, formData) {
+  const cookieStore = cookies();
   const email = formData.get("email");
   const password = formData.get("password");
 
+  let user = null;
+
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return { message: "Email tidak ditemukan" };
-
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) return { message: "Password salah" };
-
-    return { message: "Login berhasil", redirect: "/dashboard" };
-  } catch (err) {
-    return { message: "Gagal login" };
+    user = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+  } catch (error) {
+    console.log("Error saat mencari user:", error);
+    return {
+      message: "Terjadi kesalahan saat mencari user",
+    };
   }
+
+  if (!user) {
+    console.log("User tidak ditemukan");
+    return {
+      message: "Email tidak ditemukan",
+    };
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    console.log("Password tidak cocok");
+    return {
+      message: "Password salah",
+    };
+  }
+
+  const newSession = await prisma.session.create({
+    data: {
+      userId: user.id,
+    },
+  });
+
+  cookieStore.set("sessionId", newSession.id, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV == "production",
+    expires: 1000 * 60 * 60 * 24,
+  });
+  redirect("/dashboard");
+}
+
+export async function logoutUser(formDatas) {
+  const cookieStore = cookies();
+  const session = await getSession();
+
+  await prisma.session.delete({
+    where: {
+      id: session.id,
+    },
+  });
+
+  cookieStore.delete("sessionId");
+  redirect("/");
 }
