@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
 export async function PUT(request, { params }) {
-    // Mengambil id dari params
     const { id } = await params;
 
     try {
@@ -19,7 +18,6 @@ export async function PUT(request, { params }) {
             WHERE id = $7 
             RETURNING *
         `;
-        // Pastikan urutan dan jumlah variabel sesuai dengan query
         const values = [judul, parseFloat(nominal), tanggal, jam, catatan, bukti, id];
 
         const result = await client.query(queryText, values);
@@ -33,5 +31,23 @@ export async function PUT(request, { params }) {
     } catch (error) {
         console.error(`Failed to update transaction ${id}:`, error);
         return NextResponse.json({ message: 'Gagal memperbarui transaksi' }, { status: 500 });
+    }
+}
+
+export async function DELETE(request, { params }) {
+    const { id } = params;
+    try {
+        const client = await pool.connect();
+        const result = await client.query('DELETE FROM transaksi WHERE id = $1 RETURNING *', [id]);
+        client.release();
+
+        if (result.rowCount === 0) {
+            return NextResponse.json({ message: 'Transaksi tidak ditemukan' }, { status: 404 });
+        }
+
+        return new NextResponse(null, { status: 204 }); 
+    } catch (error) {
+        console.error(`Failed to delete transaction ${id}:`, error);
+        return NextResponse.json({ message: 'Gagal menghapus transaksi' }, { status: 500 });
     }
 }

@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
-import R2 from '@/lib/r2'; // Impor client R2 kita
+import R2 from '@/lib/r2'; 
 
 export async function POST(request) {
     try {
         const { filename, contentType } = await request.json();
 
-        // Membuat nama file yang unik untuk menghindari tumpang tindih
         const uniqueFilename = `${crypto.randomUUID()}-${filename}`;
 
         const command = new PutObjectCommand({
@@ -16,9 +15,8 @@ export async function POST(request) {
             ContentType: contentType,
         });
 
-        const uploadUrl = await getSignedUrl(R2, command, { expiresIn: 600 }); // URL berlaku selama 10 menit
+        const uploadUrl = await getSignedUrl(R2, command, { expiresIn: 600 }); 
 
-        // URL file setelah berhasil di-upload
         const publicFileUrl = `${process.env.R2_PUBLIC_URL}/${uniqueFilename}`;
 
         return NextResponse.json({ uploadUrl, publicFileUrl });

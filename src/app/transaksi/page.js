@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-// Fungsi untuk memformat angka menjadi format mata uang Rupiah
 const formatRupiah = (nominal) => {
   const numberAmount = typeof nominal === 'string' ? parseFloat(nominal) : nominal;
   if (isNaN(numberAmount)) return 'Rp 0';
@@ -50,26 +49,22 @@ export default function Home() {
     const method = editingId ? 'PUT' : 'POST';
 
     try {
-      // --- TAMBAHKAN BLOK KODE INI ---
       const dataToSubmit = {
         ...formData,
-        bukti: buktiUrl // Gabungkan data form dengan URL bukti
+        bukti: buktiUrl 
       };
-      // --------------------------------
 
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        // Kirim data yang sudah digabung
         body: JSON.stringify(dataToSubmit),
       });
 
       if (!res.ok) throw new Error('Operasi gagal');
 
-      // Reset semua state setelah berhasil
       setFormData({ judul: '', nominal: '', tanggal: '', jam: '', catatan: '', bukti: '' });
       setEditingId(null);
-      setBuktiUrl(''); // <-- Jangan lupa reset state bukti
+      setBuktiUrl('');
 
       if (fileInputRef.current) {
         fileInputRef.current.value = null;
@@ -116,31 +111,25 @@ export default function Home() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 1. Tentukan tipe file dan ukuran maksimal
     const allowedTypes = ['image/jpeg', 'image/png'];
-    const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
+    const maxSizeInBytes = 2 * 1024 * 1024; 
 
-    // 2. Validasi tipe file
     if (!allowedTypes.includes(file.type)) {
       alert('Error: Hanya file dengan format JPG atau PNG yang diizinkan!');
-      // Reset input file jika tidak valid
       if (fileInputRef.current) {
         fileInputRef.current.value = null;
       }
       return;
     }
 
-    // 3. Validasi ukuran file
     if (file.size > maxSizeInBytes) {
       alert('Error: Ukuran file maksimal adalah 2MB!');
-      // Reset input file jika tidak valid
       if (fileInputRef.current) {
         fileInputRef.current.value = null;
       }
       return;
     }
 
-    // --- Jika lolos semua validasi, lanjutkan proses upload ---
     setIsUploading(true);
     try {
       const res = await fetch('/api/upload', {
