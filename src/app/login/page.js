@@ -6,37 +6,52 @@ import { useRouter } from "next/navigation";
 import { loginUser } from "@/app/action";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle, CheckCircle } from "lucide-react";
 
-const initialState = { message: "", redirect: "" };
+const initialStatus = { message: "", redirect: "" };
 
 export default function LoginPage() {
   const router = useRouter();
-  const [state, formAction] = useActionState(loginUser, initialState);
+  const [statusMessage, formAction] = useActionState(loginUser, initialStatus);
 
   useEffect(() => {
-    if (state?.redirect) {
-      router.push(state.redirect);
+    if (statusMessage?.redirect) {
+      const timeout = setTimeout(() => {
+        router.push(statusMessage.redirect);
+      }, 1000);
+      return () => clearTimeout(timeout);
     }
-  }, [state?.redirect, router]);
+  }, [statusMessage?.redirect, router]);
+
+  const isSuccess = statusMessage.message?.toLowerCase().includes("berhasil");
+  const isError = statusMessage.message && !isSuccess;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FFD700]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-400 to-yellow-600 text-gray-900">
       <form
         action={formAction}
         className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md"
       >
-        <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
+          Login
+        </h2>
 
-        {state?.message && (
-          <div
-            className={`p-2 mb-3 text-sm rounded text-center ${
-              state.message.includes("berhasil")
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
-            }`}
+        {statusMessage.message && (
+          <Alert
+            variant={isSuccess ? "default" : "destructive"}
+            className="mb-4"
           >
-            {state.message}
-          </div>
+            {isSuccess ? (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            ) : (
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+            )}
+            <AlertTitle>
+              {isSuccess ? "Login Berhasil!" : "Gagal Login"}
+            </AlertTitle>
+            <AlertDescription>{statusMessage.message}</AlertDescription>
+          </Alert>
         )}
 
         <Input name="email" type="email" placeholder="Email" className="mb-3" />
@@ -44,9 +59,12 @@ export default function LoginPage() {
           name="password"
           type="password"
           placeholder="Password"
-          className="mb-3"
+          className="mb-4"
         />
-        <Button type="submit" className="w-full bg-blue-600 text-white">
+        <Button
+          type="submit"
+          className="w-full bg-black text-white hover:bg-gray-800"
+        >
           Login
         </Button>
       </form>
