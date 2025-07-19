@@ -39,7 +39,7 @@ export async function registerUser(statusMessage, formData) {
 }
 
 export async function loginUser(statusMessage, formData) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const email = formData.get("email");
   const password = formData.get("password");
 
@@ -82,13 +82,13 @@ export async function loginUser(statusMessage, formData) {
   cookieStore.set("sessionId", newSession.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV == "production",
-    expires: 1000 * 60 * 60 * 24,
+    maxAge: 1000 * 30,
   });
   redirect("/dashboard");
 }
 
 export async function logoutUser(formDatas) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const session = await getSession();
 
   await prisma.session.delete({
