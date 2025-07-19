@@ -1,10 +1,3 @@
-<<<<<<< Updated upstream
-export default function Home() {
-  return (
-    <div>
-      <h1>Halo Auto Bokek!</h1>
-    </div>
-=======
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -363,6 +356,5 @@ export default function Home() {
         )}
       </div>
     </main>
->>>>>>> Stashed changes
   );
 }
