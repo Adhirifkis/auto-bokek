@@ -1,15 +1,25 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import prisma from "@/utils/prisma";
 import { getSession } from "@/services/session";
 import bcrypt from "bcrypt";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import * as arctic from "arctic";
+import { google } from "@/utils/arctic";
 
 export async function registerUser(statusMessage, formData) {
-  const name = formData.get("name");
-  const email = formData.get("email");
+  const name = formData.get("name")?.trim();
+  const email = formData.get("email")?.trim().toLowerCase();
   const password = formData.get("password");
+
+  if (!name || !email || !password) {
+    return { message: "Semua field wajib diisi" };
+  }
+
+  if (password.length < 6) {
+    return { message: "Password minimal 6 karakter" };
+  }
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -99,4 +109,18 @@ export async function logoutUser(formDatas) {
 
   cookieStore.delete("sessionId");
   redirect("/");
+}
+
+export async function googleLoginAction() {
+  const cookieStore = await cookies();
+
+  const state = arctic.generateState();
+  const codeVerifier = arctic.generateCodeVerifier();
+  const scopes = ["openid", "profile", "email"];
+
+  const url = google.createAuthorizationURL(state, codeVerifier, scopes);
+
+  cookieStore.set("codeVerifier", codeVerifier);
+
+  redirect(url);
 }
